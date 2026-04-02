@@ -1,0 +1,9 @@
+We take the waveform (audio signal) and divide it into small chunks (frames).
+For each chunk, we compute energy by squaring and summing the values, which tells us how strong the signal is.
+We also convert amplitude into dB (log scale) to better approximate how humans perceive loudness.
+
+Then we use a spectrogram to see how energy is distributed across different frequencies over time (not just the highest frequency).
+
+MFCCs are derived from the spectrogram by transforming it into a form that matches human hearing and compressing it into coefficients that capture the overall sound texture.
+
+Finally, we use these extracted features to define rules that map audio characteristics to moods.

@@ -1,0 +1,8 @@
+librosa
+numpy
+matplotlib
+soundfile
+audioread
+scipy
+joblib
+numba
