@@ -1,2 +1,4 @@
 audio-env/
 *.zip
+node_modules/
+aiservice/uploads/
