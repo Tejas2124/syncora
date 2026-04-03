@@ -1,0 +1,27 @@
+{
+  "name": "ado's-project",
+  "version": "1.0.0",
+  "description": "We begin with the raw audio signal (waveform), represented as a discrete sequence of amplitude values:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tejas2124/syncora.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Tejas2124/syncora/issues"
+  },
+  "homepage": "https://github.com/Tejas2124/syncora#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "pdf-parse": "^2.4.5"
+  }
+}
