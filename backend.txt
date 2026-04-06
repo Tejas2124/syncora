@@ -1,0 +1,129 @@
+API Contract
+1. File Upload
+
+POST /api/upload
+Content-Type: multipart/form-data
+Body: { file: <.txt/.epub/.pdf> }
+
+Response 201:
+{
+  "bookId": "uuid",
+  "title": "string",
+  "totalParagraphs": number
+}
+2. Get Book Metadata
+
+GET /api/books/:bookId
+
+Response 200:
+{
+  "bookId": "uuid",
+  "title": "string",
+  "fileName": "string",
+  "totalParagraphs": number,
+  "createdAt": "ISO date"
+}
+3. Get Paragraphs (paginated)
+
+GET /api/books/:bookId/paragraphs?page=1&limit=10
+
+Response 200:
+{
+  "paragraphs": [
+    {
+      "index": 0,
+      "text": "string",
+      "emotion": "melancholy" | "joy" | "tension" | "anger" | ...,
+      "songId": "uuid"
+    }
+  ],
+  "page": 1,
+  "totalPages": number
+}
+4. Get Single Paragraph + Analysis
+
+GET /api/books/:bookId/paragraphs/:index
+
+Response 200:
+{
+  "index": 0,
+  "text": "string",
+  "emotion": "string",
+  "confidence": 0.87,
+  "songId": "uuid",
+  "songTitle": "string"
+}
+5. Get Song / Stream Audio
+
+GET /api/songs/:songId
+
+Response 200:
+{
+  "songId": "uuid",
+  "title": "string",
+  "artist": "string",
+  "emotion": "string",
+  "audioUrl": "/api/songs/:songId/stream",
+  "duration": number
+}
+
+GET /api/songs/:songId/stream
+Response: audio stream (Content-Type: audio/mpeg)
+6. List All Songs (for debugging/admin)
+
+GET /api/songs?emotion=melancholy
+
+Response 200:
+{
+  "songs": [{ "songId", "title", "artist", "emotion" }]
+}
+Backend Development Plan
+Phase 1 — Core Setup
+Express app with CORS, file upload (multer), error handling middleware
+Database setup (SQLite or Postgres) — tables: books, paragraphs, songs
+Seed the 50 pre-analyzed songs into songs table with emotion tags
+Phase 2 — File Processing Pipeline
+POST /api/upload — accept file, parse into paragraphs (split on double newlines / chapter markers)
+Store raw paragraphs in DB linked to bookId
+Phase 3 — Emotion Analysis
+For each paragraph, run emotion classification (options: a local NLP model like a HuggingFace sentiment pipeline, or call an LLM API)
+Map the detected emotion to the closest matching song from your 50-song catalog
+Store emotion + songId per paragraph
+Phase 4 — Serving Endpoints
+Implement the GET endpoints above
+Audio streaming with range request support (so seeking works in the browser)
+Emotion Categories to Agree On
+Define a shared enum both teams use:
+
+
+joy, sadness, anger, fear, surprise, love, 
+melancholy, tension, triumph, peace, mystery, nostalgia
+Map each of the 50 songs to one or more of these. Backend picks the best match per paragraph.
+
+Frontend Development Plan
+Phase 1 — Core Setup
+React app (Vite), router, basic layout
+API service layer — a single api.ts file with functions for every endpoint above
+Mock responses for all endpoints so you don't need the backend running
+Phase 2 — Upload Flow
+Upload page: drag-and-drop or file picker
+Call POST /api/upload, redirect to reader view on success
+Phase 3 — Reader View (main screen)
+Display one paragraph at a time, centered, with good typography
+Previous / Next navigation (keyboard arrows too)
+On paragraph change: fetch paragraph data, start playing the matched song
+Smooth crossfade between songs when transitioning paragraphs (use Web Audio API or two <audio> elements alternating)
+Phase 4 — Audio Player
+Persistent bottom bar: song title, play/pause, progress, volume
+Visual indicator of the detected emotion (color tint, label, or subtle background change)
+Phase 5 — Polish
+Loading states, error handling
+Book library page (list previously uploaded books)
+Reading progress persistence (localStorage)
+How to Work in Parallel
+Frontend uses	Backend provides
+Hardcoded mock JSON matching the API contract above	Real endpoints, same shape
+A /mocks/ folder with sample responses	Integration tests hitting each endpoint
+When backend is ready, frontend swaps the base URL from mocks to localhost:3001 and everything connects.
+
+Agree on the emotion enum and response shapes above before starting — that's the only hard dependency. Everything else can proceed independently.

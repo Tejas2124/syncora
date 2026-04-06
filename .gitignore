@@ -2,3 +2,27 @@ audio-env/
 *.zip
 node_modules/
 aiservice/uploads/
+
+# Local secrets and env files
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts
+db/moodread.db
+uploads/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Python cache noise
+.mypy_cache/
+.pytest_cache/
+__pycache__/
