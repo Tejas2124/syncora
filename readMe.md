@@ -60,6 +60,7 @@ Amplitude is converted to a logarithmic scale:
 ### Why logarithmic scaling?
 
 Human hearing is logarithmic in nature:
+
 - Equal ratios in amplitude correspond to similar perceived differences in loudness  
 
 ### Characteristics
@@ -173,7 +174,7 @@ These features are mapped to moods using heuristic rules:
 ## Conceptual Layers
 
 | Layer        | Description                         |
-|-------------|-------------------------------------|
+|--------------|-------------------------------------|
 | Waveform     | Physical signal representation      |
 | Spectrogram  | Frequency structure over time       |
 | MFCC         | Perceptual representation           |

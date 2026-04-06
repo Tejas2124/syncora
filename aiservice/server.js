@@ -9,7 +9,7 @@
 const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
-const pdfParse = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
 const cors = require("cors");
 const app = express();
 const PORT = 3080;
@@ -47,8 +47,15 @@ app.post("/extract", upload.single("pdf"), async (req, res) => {
 
         const filePath = req.file.path;
 
-        // const dataBuffer = fs.readFileSync(filePath);
-        const data = await pdfParse(req.file.buffer);
+        const dataBuffer = fs.readFileSync(filePath);
+        const parser = new PDFParse({ data: dataBuffer });
+        let data;
+
+        try {
+            data = await parser.getText();
+        } finally {
+            await parser.destroy();
+        }
 
         const paragraphs = extractParagraphs(data.text);
 
