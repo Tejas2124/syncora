@@ -3,6 +3,11 @@ audio-env/
 node_modules/
 aiservice/uploads/
 
+frontend/dist/
+.env
+package-lock.json
+
+
 # Local secrets and env files
 .env
 .env.*
@@ -26,3 +31,4 @@ Thumbs.db
 .mypy_cache/
 .pytest_cache/
 __pycache__/
+
