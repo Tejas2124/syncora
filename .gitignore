@@ -2,3 +2,6 @@ audio-env/
 *.zip
 node_modules/
 aiservice/uploads/
+frontend/dist/
+.env
+package-lock.json
