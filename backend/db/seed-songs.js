@@ -5,7 +5,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const CSV_PATH = path.join(__dirname, "..", "audio_features.csv");
+const CSV_PATH = path.join(__dirname, "..", "..", "audio_features.csv");
 
 const MOOD_TO_EMOTION = {
   "Dreamy / Ambient": "peace",

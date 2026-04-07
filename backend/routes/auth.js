@@ -62,6 +62,7 @@ router.post("/register", async (req, res, next) => {
     const { valid, errors, values } = validateRegisterPayload(req.body);
 
     if (!valid) {
+      console.warn(`[AUTH] Registration failed: validation error. ${errors.join(", ")}.`);
       return res.status(400).json({ error: "Validation failed.", details: errors });
     }
 
@@ -75,6 +76,7 @@ router.post("/register", async (req, res, next) => {
         ? "Email is already in use."
         : "Username is already in use.";
 
+      console.warn(`[AUTH] Registration rejected: ${existingUser.email === values.email ? `email "${values.email}" already in use` : `username "${values.username}" already in use`}.`);
       return res.status(409).json({ error: conflictMessage });
     }
 
@@ -98,6 +100,8 @@ router.post("/register", async (req, res, next) => {
     const session = await createSession(user, req);
     setRefreshCookie(res, session.refreshToken);
 
+    console.log(`[AUTH] User registered successfully: ${user.username} (${user.email})`);
+
     return res.status(201).json({
       user: toPublicUser(user),
       accessToken: session.accessToken,
@@ -112,6 +116,7 @@ router.post("/login", async (req, res, next) => {
     const { valid, errors, values } = validateLoginPayload(req.body);
 
     if (!valid) {
+      console.warn(`[AUTH] Login failed: validation error. ${errors.join(", ")}.`);
       return res.status(400).json({ error: "Validation failed.", details: errors });
     }
 
@@ -128,12 +133,14 @@ router.post("/login", async (req, res, next) => {
     );
 
     if (!user) {
+      console.warn(`[AUTH] Login rejected for "${identifier}": no matching user account. Check email/username.`);
       return res.status(401).json({ error: "Invalid email/username or password." });
     }
 
     const passwordMatches = await bcrypt.compare(values.password, user.passwordHash);
 
     if (!passwordMatches) {
+      console.warn(`[AUTH] Login rejected for "${user.username}": invalid password. Check credentials.`);
       return res.status(401).json({ error: "Invalid email/username or password." });
     }
 
@@ -142,6 +149,8 @@ router.post("/login", async (req, res, next) => {
 
     const session = await createSession(user, req);
     setRefreshCookie(res, session.refreshToken);
+
+    console.log(`[AUTH] User logged in: ${user.username}`);
 
     return res.status(200).json({
       user: toPublicUser({ ...user, lastLoginAt: now, updatedAt: now }),
@@ -157,30 +166,36 @@ router.post("/refresh", async (req, res, next) => {
     const refreshToken = getRefreshTokenFromRequest(req);
 
     if (!refreshToken) {
+      console.warn(`[AUTH] Token refresh failed: no refresh token in request. User must log in again.`);
       return res.status(401).json({ error: "Missing refresh token." });
     }
 
     const payload = verifyRefreshToken(refreshToken);
 
     if (payload.type !== "refresh" || !payload.sub || !payload.sid) {
+      console.warn("auth refresh failed reason=invalidPayload");
       return res.status(401).json({ error: "Invalid refresh token." });
     }
 
     const session = await get("SELECT * FROM auth_sessions WHERE id = ?", [payload.sid]);
 
     if (!session || session.userId !== payload.sub) {
+      console.warn(`auth refresh failed reason=sessionNotFound sessionId=${payload.sid}`);
       return res.status(401).json({ error: "Refresh session not found." });
     }
 
     if (session.revokedAt) {
+      console.warn(`auth refresh failed reason=sessionRevoked sessionId=${session.id}`);
       return res.status(401).json({ error: "Refresh session has been revoked." });
     }
 
     if (new Date(session.expiresAt).getTime() <= Date.now()) {
+      console.warn(`[AUTH] Token refresh failed: session expired. User must log in again.`);
       return res.status(401).json({ error: "Refresh session has expired." });
     }
 
     if (session.refreshTokenHash !== hashToken(refreshToken)) {
+      console.warn(`auth refresh failed reason=tokenMismatch sessionId=${session.id}`);
       return res.status(401).json({ error: "Refresh token mismatch." });
     }
 
@@ -190,6 +205,7 @@ router.post("/refresh", async (req, res, next) => {
     );
 
     if (!user) {
+      console.warn(`auth refresh failed reason=userNotFound userId=${session.userId}`);
       return res.status(401).json({ error: "User no longer exists." });
     }
 
@@ -202,6 +218,8 @@ router.post("/refresh", async (req, res, next) => {
     );
 
     setRefreshCookie(res, newSession.refreshToken);
+
+    console.log(`[AUTH] Token refreshed successfully for ${user.username}`);
 
     return res.status(200).json({
       user: toPublicUser(user),
@@ -236,6 +254,7 @@ router.post("/logout", async (req, res, next) => {
     }
 
     clearRefreshCookie(res);
+    console.log("auth logout success");
     return res.status(200).json({ message: "Logged out successfully." });
   } catch (error) {
     return next(error);

@@ -23,7 +23,7 @@ async function initializeDb() {
       if (err) {
         reject(new Error(`Failed to open database: ${err.message}`));
       } else {
-        console.log(`  📦 Database: ${DB_PATH}`);
+        console.log(`[DB] Connected to database: ${DB_PATH}`);
 
         db.run("PRAGMA foreign_keys = ON");
         
@@ -36,7 +36,7 @@ async function initializeDb() {
             if (err) {
               reject(new Error(`Failed to initialize schema: ${err.message}`));
             } else {
-              console.log("  ✓ Schema initialized");
+              console.log("db schema=initialized");
               
               // Seed songs on initialization
               try {
@@ -65,7 +65,7 @@ async function seedSongs() {
   const existingCount = await get("SELECT COUNT(*) as count FROM songs");
   
   if (existingCount.count > 0) {
-    console.log(`  ✓ Songs already seeded (${existingCount.count} songs)`);
+    console.log(`db songsSeed=skipped existingCount=${existingCount.count}`);
     return;
   }
   
@@ -85,7 +85,7 @@ async function seedSongs() {
     );
   }
   
-  console.log(`  ✓ Seeded ${songData.length} songs`);
+  console.log(`db songsSeed=completed insertedCount=${songData.length}`);
 }
 
 /**

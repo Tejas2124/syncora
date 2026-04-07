@@ -58,7 +58,7 @@ router.get("/songs/:songId/stream", async (req, res, next) => {
 
     const absolutePath = path.isAbsolute(song.filePath)
       ? song.filePath
-      : path.join(__dirname, "..", song.filePath);
+      : path.join(__dirname, "..", "..", song.filePath);
 
     try {
       const stats = await fs.stat(absolutePath);

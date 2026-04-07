@@ -34,6 +34,22 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+// Request log for API routes with timing and status.
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  res.on("finish", () => {
+    if (!req.path.startsWith("/api")) {
+      return;
+    }
+    const durationMs = Number(process.hrtime.bigint() - start) / 1_000_000;
+    const statusStr = res.statusCode >= 500 ? `[ERR] ${res.statusCode}` : res.statusCode >= 400 ? `[WARN] ${res.statusCode}` : `[OK] ${res.statusCode}`;
+    console.log(
+      `[REQUEST] ${req.method} ${req.path} → ${statusStr} (${durationMs.toFixed(0)}ms)`
+    );
+  });
+  next();
+});
+
 // Static files for uploaded assets
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -98,7 +114,7 @@ app.get("/api/songs/:songId/stream", async (req, res, next) => {
 
     const absolutePath = path.isAbsolute(song.filePath)
       ? song.filePath
-      : path.join(__dirname, song.filePath);
+      : path.join(__dirname, "..", song.filePath);
 
     try {
       const stats = await fs.stat(absolutePath);
@@ -153,7 +169,9 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error("Error:", err);
+  console.error(
+    `[ERROR] ${req.method} ${req.path}: ${err.message || "Internal server error"}`
+  );
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal server error";
   res.status(statusCode).json({ error: message });
@@ -165,20 +183,16 @@ async function start() {
   try {
     // Initialize database
     await initializeDb();
-    console.log("✓ Database initialized");
+    console.log("[SERVER] Database initialized and ready");
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`✓ Server running on http://localhost:${PORT}`);
-      console.log(`  Emotion Classification: Disabled (Phase 3)`);
-      console.log(`  Audio Streaming: Disabled (Phase 4)`);
+      console.log(`[SERVER] Listening on port ${PORT} (${process.env.NODE_ENV || "development"})`);
     });
   } catch (err) {
-    console.error("Failed to start server:", err);
+    console.error(`[SERVER] Startup failed: ${err.message}`);
     process.exit(1);
   }
 }
-
-start();
 
 module.exports = app;
