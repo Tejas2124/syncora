@@ -11,6 +11,7 @@ const fs = require("fs/promises");
 const { initializeDb } = require("./db/db");
 const authRoutes = require("./routes/auth");
 const uploadRoutes = require("./routes/upload");
+const parserRoutes = require("./routes/parser");
 const bookRoutes = require("./routes/books");
 const { all, get } = require("./db/db");
 const { validateEmotionFilter } = require("./utils/content");
@@ -52,6 +53,7 @@ app.use((req, res, next) => {
 
 // Static files for uploaded assets
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/parser-lab", express.static(path.join(__dirname, "parser-lab")));
 
 // ============ ROUTES ============
 
@@ -61,6 +63,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
+app.use("/api/parser", parserRoutes);
 
 app.get("/api/songs", async (req, res, next) => {
   try {
@@ -195,4 +198,8 @@ async function start() {
   }
 }
 
-module.exports = app;
+if (require.main === module) {
+  start();
+}
+
+module.exports = { app, start };
