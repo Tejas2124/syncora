@@ -13,6 +13,7 @@ const authRoutes = require("./routes/auth");
 const uploadRoutes = require("./routes/upload");
 const parserRoutes = require("./routes/parser");
 const bookRoutes = require("./routes/books");
+const classifyai = require("./routes/ai");
 const { all, get } = require("./db/db");
 const { validateEmotionFilter } = require("./utils/content");
 
@@ -64,6 +65,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/parser", parserRoutes);
+app.use("api/classify",classifyai);
 
 app.get("/api/songs", async (req, res, next) => {
   try {
